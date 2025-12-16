@@ -1,5 +1,9 @@
 # Logseq Journal Widget
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/99bf74ba-4064-4873-9548-d8544e734db1" width="300" alt="화면 크기의 50%">
+</div>
+
 A simple, practical Android Home Screen Widget designed to display your **Logseq Daily Journal** entries at a glance.
 
 This widget provides quick access to your most recent thoughts and notes without needing to open the full Logseq application, helping you stay connected to your daily knowledge base.
