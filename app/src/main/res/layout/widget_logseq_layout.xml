@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:background="@drawable/widget_background">
+
+  <RelativeLayout
+    android:id="@+id/widget_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp"
+    android:background="#33FFFFFF">
+
+    <TextView
+      android:id="@+id/widget_title"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentStart="true"
+      android:layout_centerVertical="true"
+      tools:text="Logseq Today - 2023-10-27"
+      android:textSize="14sp"
+      android:textStyle="bold"
+      android:textColor="@android:color/white" />
+
+    <ImageButton
+      android:id="@+id/btn_refresh"
+      android:layout_width="32dp"
+      android:layout_height="32dp"
+      android:layout_alignParentEnd="true"
+      android:layout_centerVertical="true"
+      android:src="@android:drawable/ic_popup_sync"
+      android:contentDescription="Refresh"
+      android:background="@android:color/transparent" />
+  </RelativeLayout>
+
+  <ListView
+    android:id="@+id/journal_content_list"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:paddingBottom="8dp"
+    android:divider="@null"
+    android:dividerHeight="0dp"/>
+
+</LinearLayout>
