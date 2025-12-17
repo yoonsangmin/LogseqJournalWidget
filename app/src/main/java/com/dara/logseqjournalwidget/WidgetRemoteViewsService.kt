@@ -81,11 +81,11 @@ class WidgetRemoteViewsFactory(private val context: Context) : RemoteViewsServic
         }
     }
 
-    private fun applyStyling(line: String): CharSequence {
+ private fun applyStyling(line: String): CharSequence {
         val spannable = SpannableStringBuilder(line)
-        // Use raw string """...""" to avoid escaping issues with backslashes.
-        // The regex now correctly captures #tags in group 1, and content of [[...]] in group 3.
-        val pattern = Pattern.compile("""(#\w+)|(\[\[(.*?)\]\])""", Pattern.DOTALL)
+        // Regex to find all three types of markup.
+        // Order is important: #[[...]] first, then [[...]], then #tag.
+        val pattern = Pattern.compile("""(#(\[\[(.*?)\]\]))|(\[\[(.*?)\]\])|(#\w+)""", Pattern.DOTALL)
         val matcher = pattern.matcher(line)
         val replacements = mutableListOf<Triple<Int, Int, CharSequence>>()
 
@@ -93,21 +93,32 @@ class WidgetRemoteViewsFactory(private val context: Context) : RemoteViewsServic
             val start = matcher.start()
             val end = matcher.end()
 
-            val tagMatch = matcher.group(1)
-            val linkContent = matcher.group(3)
+            if (matcher.group(1) != null) {
+                // Case 1: Matched #[[content]] -> group(3) is the content
+                val content = matcher.group(3) ?: ""
+                val styledHash = SpannableString("#")
+                styledHash.setSpan(ForegroundColorSpan(tagColor), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                styledHash.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
-            if (tagMatch != null) {
-                // It's a #tag, style the whole thing
-                val styled = SpannableString(tagMatch)
+                val styledContent = SpannableString(content)
+                styledContent.setSpan(ForegroundColorSpan(tagColor), 0, styledContent.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                styledContent.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, styledContent.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                val builder = SpannableStringBuilder().append(styledHash).append(styledContent)
+                replacements.add(Triple(start, end, builder))
+            } else if (matcher.group(4) != null) {
+                // Case 2: Matched [[content]] -> group(5) is the content
+                val content = matcher.group(5) ?: ""
+                val styled = SpannableString(content)
                 styled.setSpan(ForegroundColorSpan(tagColor), 0, styled.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 styled.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, styled.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 replacements.add(Triple(start, end, styled))
-            } else if (linkContent != null) {
-                // It's a [[link]], style only the content inside
-                val styled = SpannableString(linkContent)
+            } else if (matcher.group(6) != null) {
+                // Case 3: Matched #tag -> group(6) is the tag
+                val tag = matcher.group(6)!!
+                val styled = SpannableString(tag)
                 styled.setSpan(ForegroundColorSpan(tagColor), 0, styled.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 styled.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, styled.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                // Replace the whole [[content]] with just the styled content
                 replacements.add(Triple(start, end, styled))
             }
         }
@@ -119,6 +130,7 @@ class WidgetRemoteViewsFactory(private val context: Context) : RemoteViewsServic
 
         return spannable
     }
+
 
     override fun getLoadingView(): RemoteViews? {
         // Return a loading view, or null for the default loading view.
