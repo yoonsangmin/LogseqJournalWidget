@@ -34,7 +34,6 @@ class LogseqWidgetProvider : AppWidgetProvider() {
             )
             if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
                 val appWidgetManager = AppWidgetManager.getInstance(context)
-                // Notify the system to update the data in the ListView.
                 appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.journal_content_list)
             }
         }
@@ -47,16 +46,26 @@ class LogseqWidgetProvider : AppWidgetProvider() {
     ) {
         val views = RemoteViews(context.packageName, R.layout.widget_logseq_layout)
 
-        // Set the title with the current date.
+        // Set title and click to open MainActivity
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val todayDate = dateFormat.format(Date())
         views.setTextViewText(R.id.widget_title, "Logseq Today $todayDate")
+        val titleIntent = Intent(context, MainActivity::class.java)
+        val titlePendingIntent = PendingIntent.getActivity(context, 0, titleIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        views.setOnClickPendingIntent(R.id.widget_title, titlePendingIntent)
 
-        // Create an Intent to connect the ListView with the RemoteViewsService.
+        // Set remote adapter for the list
         val serviceIntent = Intent(context, WidgetRemoteViewsService::class.java)
         views.setRemoteAdapter(R.id.journal_content_list, serviceIntent)
 
-        // Set up the refresh button.
+        // Set up click template for list items to open Logseq
+        val logseqLaunchIntent = context.packageManager.getLaunchIntentForPackage("com.logseq.app")
+        if (logseqLaunchIntent != null) {
+            val logseqPendingIntent = PendingIntent.getActivity(context, 1, logseqLaunchIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            views.setPendingIntentTemplate(R.id.journal_content_list, logseqPendingIntent)
+        }
+
+        // Set up refresh button
         val refreshIntent = Intent(context, LogseqWidgetProvider::class.java).apply {
             action = ACTION_REFRESH
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)

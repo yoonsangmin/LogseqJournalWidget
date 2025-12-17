@@ -1,5 +1,6 @@
 package com.dara.logseqjournalwidget
 
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -40,7 +41,29 @@ class WidgetRemoteViewsFactory(private val context: Context) : RemoteViewsServic
     override fun getViewAt(position: Int): RemoteViews {
         val line = journalLines.getOrNull(position) ?: ""
         return RemoteViews(context.packageName, R.layout.widget_list_item).apply {
-            setTextViewText(R.id.list_item_text, line)
+            val trimmedLine = line.trim()
+            val finalLine: String
+
+            if (trimmedLine == "-") {
+                finalLine = ""
+            } else if (trimmedLine.startsWith("-")) {
+                val hyphenIndex = line.indexOf('-')
+                val indentation = line.substring(0, hyphenIndex)
+                val restOfLine = line.substring(hyphenIndex + 1)
+                val content = restOfLine.trimStart()
+                finalLine = "$indentation● $content"
+            } else {
+                finalLine = line
+            }
+            setTextViewText(R.id.list_item_text, finalLine)
+
+            // Create an Intent to launch the Logseq app
+            val logseqLaunchIntent = context.packageManager.getLaunchIntentForPackage("com.logseq.app")
+            if (logseqLaunchIntent != null) {
+                // Use the position as the requestCode to ensure each PendingIntent is unique
+                val logseqPendingIntent = PendingIntent.getActivity(context, position, logseqLaunchIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                setOnClickPendingIntent(R.id.list_item_text, logseqPendingIntent)
+            }
         }
     }
 
@@ -94,5 +117,10 @@ class WidgetRemoteViewsFactory(private val context: Context) : RemoteViewsServic
             e.printStackTrace()
             "Error reading journal: ${e.message}"
         }
+    }
+
+    private fun getJournalPath(context: Context): String? {
+        val prefs = context.getSharedPreferences("widget_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("journal_path_global", null)
     }
 }
