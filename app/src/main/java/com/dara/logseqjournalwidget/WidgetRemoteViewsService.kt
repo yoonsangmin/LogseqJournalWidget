@@ -50,7 +50,9 @@ class WidgetRemoteViewsFactory(private val context: Context) : RemoteViewsServic
     }
 
     override fun getViewAt(position: Int): RemoteViews {
-        val line = journalLines.getOrNull(position) ?: ""
+        val originalLine = journalLines.getOrNull(position) ?: ""
+        val line = originalLine.replace("\t", "    ") // Replace tabs with 4 spaces for wider indentation
+
         return RemoteViews(context.packageName, R.layout.widget_list_item).apply {
             val trimmedLine = line.trim()
             val finalLine: String
