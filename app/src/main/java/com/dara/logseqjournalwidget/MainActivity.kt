@@ -51,6 +51,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(context: Context, onSelectClick: () -> Unit) {
     val savedPath = getJournalPath(context)
+    val onSettingsClick = {
+        context.startActivity(Intent(context, SettingsActivity::class.java))
+    }
 
     Column(
         modifier = Modifier
@@ -63,6 +66,9 @@ fun MainScreen(context: Context, onSelectClick: () -> Unit) {
         Text("Selected Path: ${savedPath ?: "None"}", modifier = Modifier.padding(16.dp))
         Button(onClick = onSelectClick) {
             Text("Select Directory")
+        }
+        Button(onClick = onSettingsClick, modifier = Modifier.padding(top = 8.dp)) {
+            Text("Settings")
         }
     }
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <EditTextPreference
+        app:key="tag_color_hex"
+        app:title="Tag Color"
+        app:summary="Set the color for tags (e.g., #FF8A65)"
+        app:defaultValue="#FF8A65" />
+</PreferenceScreen>
